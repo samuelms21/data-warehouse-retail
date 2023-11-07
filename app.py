@@ -3,7 +3,10 @@ import pandas as pd
 from sqlalchemy import create_engine
 from flask_sqlalchemy import SQLAlchemy
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import threading
+import time
+
 
 app = Flask(__name__)
 
@@ -21,6 +24,7 @@ def index():
 def generate_chart():
     chart_type = request.form.get('chart_type')
     chart_title = ""
+    query = ""
 
     if chart_type == 'per_toko':
         chart_title = 'Keuntungan Bersih Per Toko'
@@ -54,24 +58,30 @@ def generate_chart():
             GROUP BY product.name
         """
 
-    # Eksekusi query dan ambil data
+    # Ini buat eksekusi query sama ambil data aja
     data = pd.read_sql(query, db.engine)
 
-    # Buat grafik dalam thread terpisah
-    def create_plot():
-        plt.clf()  # Reset the current figure
-        plt.bar(data['x'], data['y'])
-        plt.xlabel('X Label')
-        plt.ylabel('Y Label')
-        plt.title(chart_title)
-        chart_filename = 'static/chart.png'
+    # Buat grafik dalam thread terpisah sama nama file unik
+    def create_3d_plot():
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.bar(data['x'], data['y'], zs=0, zdir='y', alpha=0.8)
+        ax.set_xlabel('X Label')
+        ax.set_ylabel('Y Label')
+        ax.set_zlabel('Z Label')
+        ax.set_title(chart_title)
+        chart_filename = f'static/chart_{chart_type}_{int(time.time())}.png'
         plt.savefig(chart_filename)
-    
-    plot_thread = threading.Thread(target=create_plot)
-    plot_thread.start()
-    plot_thread.join()  # Menunggu thread selesai
 
-    return render_template('index.html', chart='static/chart.png')
+
+    plot_thread = threading.Thread(target=create_3d_plot)  # Ubah doang dari create_plot jadi create_3d_plot
+    plot_thread.start()
+    plot_thread.join()
+
+
+    return render_template('index.html', chart=f'static/chart_{chart_type}_{int(time.time())}.png')
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
