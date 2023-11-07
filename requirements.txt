@@ -5,3 +5,4 @@ flask_sqlalchemy
 matplotlib
 numpy
 mysqlclient
+python-dotenv
