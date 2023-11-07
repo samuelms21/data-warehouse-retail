@@ -1,0 +1,7 @@
+flask
+pandas
+sqlalchemy
+flask_sqlalchemy
+matplotlib
+numpy
+mysqlclient

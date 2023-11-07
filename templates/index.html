@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <form method="post" action="/generate_chart">
+        <label for="chart_type">Jenis grafik:</label>
+        <select name="chart_type" id="chart_type">
+            <option value="">Pilih</option> <!-- Opsi default dengan nilai kosong -->
+            <option value="per_toko">Keuntungan Bersih Per Toko</option>
+            <option value="per_hari">Keuntungan Bersih Per Hari</option>
+            <option value="per_barang">Keuntungan Bersih Per Jenis Barang</option>
+        </select>
+        
+        <input type="submit" value="Tampilkan Grafik">
+    </form>
+    <div id="chart">
+        <img src="{{ chart }}" alt="Chart">
+    </div>
+</body>
+</html>
