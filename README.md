@@ -1,11 +1,11 @@
 1. Create Virtual Environment
 ```
-python -m venv venv
+python -m venv data-warehouse
 ```
 2. Run Virtual Environment
 ```
-venv/Scripts/activate # windows
-source venv/bin/activate # macos/linux
+data-warehouse/Scripts/activate # windows
+source data-warehouse/bin/activate # macos/linux
 ```
 3. Install libraries
 ```
