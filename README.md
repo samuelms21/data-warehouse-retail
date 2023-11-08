@@ -15,7 +15,6 @@ source data-warehouse/bin/activate # macos/linux
 
 ```
 pip install -r requirements.txt
-npm install
 ```
 
 4. Copy .env.example contents to a new .env file (you can customize your MySQL database URI)
