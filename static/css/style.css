@@ -1,0 +1,16 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.flex-container {
+  display: flex;
+}
+.chart-container {
+  max-height: 500px;
+  max-width: 500px;
+  margin: 20px 0;
+}
+.select-container > select {
+  margin-right: 10px;
+}

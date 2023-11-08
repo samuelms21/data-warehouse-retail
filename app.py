@@ -16,12 +16,22 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.static_folder = 'static'
 
 db = SQLAlchemy(app)
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    query_all_stores = "SELECT id,name FROM store"
+    query_all_products = "SELECT id,name FROM product"
+    query_all_date = "SELECT id,full_date FROM date"
+    
+    stores = pd.read_sql(query_all_stores, db.engine)
+    products = pd.read_sql(query_all_products, db.engine)
+    dates = pd.read_sql(query_all_date, db.engine)
+
+    return render_template('index.html', stores=stores.to_dict(orient='records'), products=products.to_dict(orient='records'), dates=dates.to_dict(orient='records'))
+    
 
 @app.route("/generate_chart", methods=['POST'])
 def generate_chart():
@@ -84,6 +94,11 @@ def generate_chart():
 
     return render_template('index.html', chart=f'static/chart_{chart_type}_{int(time.time())}.png')
 
+@app.route("/visualize_data", methods=['POST'])
+def visualize_data():
+    selected_store = request.form.get('select_store')
+    selected_product = request.form.get('select_product')
+    selected_date = request.form.get('select_date')
 
 
 if __name__ == "__main__":

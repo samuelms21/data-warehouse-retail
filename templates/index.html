@@ -1,24 +1,97 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Dashboard</title>
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
     <h1>Dashboard</h1>
     <form action="/generate_chart" method="post">
-        <label for="chart_type">Jenis Grafik:</label>
-        <select name="chart_type" id="chart_type">
-            <option value="" disabled selected>Pilih</option>
-            <option value="per_toko">Keuntungan Bersih Per Toko</option>
-            <option value="per_hari">Keuntungan Bersih Per Hari</option>
-            <option value="per_barang">Keuntungan Bersih Per Jenis Barang</option>
-        </select>
-        <br>
-        <input type="submit" value="Tampilkan Grafik">
+      <label for="chart_type">Jenis Grafik:</label>
+      <select name="chart_type" id="chart_type">
+        <option value="" disabled selected>Pilih</option>
+        <option value="per_toko">Keuntungan Bersih Per Toko</option>
+        <option value="per_hari">Keuntungan Bersih Per Hari</option>
+        <option value="per_barang">Keuntungan Bersih Per Jenis Barang</option>
+      </select>
+      <br />
+      <input type="submit" value="Tampilkan Grafik" />
     </form>
 
     <h2>Grafik:</h2>
-    <img src="{{ chart }}" alt="Grafik" width="600" height="400">
+    <img src="{{ chart }}" alt="Grafik" width="600" height="400" />
 
-</body>
+    <br />
+    <h3>Test Chart.js by Sam</h3>
+    <div class="chart-container">
+      <canvas id="data-visualization"></canvas>
+    </div>
+
+    <form action="/visualize_data" method="post">
+      <div class="flex-container select-container">
+        <!-- STORES -->
+        <select name="select_store" id="select_store">
+          <option value="">Select a Store</option>
+          {% for store in stores %}
+          <option value="{{ store['id'] }}">{{ store['name'] }}</option>
+          {% endfor %}
+        </select>
+        <!-- STORES -->
+        <!-- PRODUCT -->
+        <select name="select_products" id="select_products">
+          <option value="">Select a Product</option>
+          {% for product in products %}
+          <option value="{{ product['id'] }}">{{ product['name'] }}</option>
+          {% endfor %}
+        </select>
+        <!-- PRODUCT -->
+        <!-- DATES -->
+        <select name="select_date" id="select_date">
+          <option value="">Select a Date</option>
+          {% for date in dates %}
+          <option value="{{ date['id'] }}">{{ date['full_date'] }}</option>
+          {% endfor %}
+          <!-- DATES -->
+        </select>
+      </div>
+      <button type="submit">Visualize Data</button>
+    </form>
+
+    <!-- JS Code -->
+    <script>
+      let graphCanvas = document.getElementById("data-visualization");
+      let rawData = "{{ stores }}".replace(/&#39;/g, "'").replace(/'/g, '"');
+      let data = JSON.parse(rawData);
+      // console.log(data);
+      // console.log(JSON.parse(rawData));
+      const myChat = new Chart(graphCanvas, {
+        type: "bar",
+        options: {
+          animation: true,
+          plugins: {
+            legend: {
+              display: true,
+            },
+            tooltip: {
+              enabled: true,
+            },
+          },
+        },
+        data: {
+          labels: data.map((row) => row.name),
+          datasets: [
+            {
+              label: "Acquisitions by year",
+              data: data.map((row) => row.id),
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
 </html>
