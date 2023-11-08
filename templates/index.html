@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Dashboard</title>
     <link
@@ -8,6 +8,12 @@
       href="{{ url_for('static', filename='css/style.css') }}"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
   </head>
   <body>
     <h1>Dashboard</h1>
@@ -27,8 +33,17 @@
     <img src="{{ chart }}" alt="Grafik" width="600" height="400" />
 
     <br />
+    <br />
+
     <h3>Test Chart.js by Sam</h3>
-    <p>CURRENT DEFAULT: PER TOKO</p>
+    <div>
+      Current Default: PER TOKO (PILIH TOKO MANA)<br /><small
+        class="text-secondary"
+        >Contoh: Tampilkan keuntungan bersih di Toko A, per tanggal, per
+        produk</small
+      >
+    </div>
+
     <div class="chart-container">
       <canvas id="data-visualization"></canvas>
     </div>
@@ -36,7 +51,12 @@
     <form action="/visualize_data" method="post">
       <div class="flex-container select-container">
         <!-- STORES -->
-        <select name="select_store" id="select_store" disabled>
+        <select
+          name="select_store"
+          id="select_store"
+          class="form-select"
+          disabled
+        >
           <option value="">Select a Store</option>
           {% for store in stores %}
           <option value="{{ store['id'] }}">{{ store['name'] }}</option>
@@ -44,7 +64,12 @@
         </select>
         <!-- STORES -->
         <!-- PRODUCT -->
-        <select name="select_products" id="select_products" disabled>
+        <select
+          name="select_products"
+          id="select_products"
+          class="form-select"
+          disabled
+        >
           <option value="">Select a Product</option>
           {% for product in products %}
           <option value="{{ product['id'] }}">{{ product['name'] }}</option>
@@ -52,7 +77,12 @@
         </select>
         <!-- PRODUCT -->
         <!-- DATES -->
-        <select name="select_date" id="select_date" disabled>
+        <select
+          name="select_date"
+          id="select_date"
+          class="form-select"
+          disabled
+        >
           <option value="">Select a Date</option>
           {% for date in dates %}
           <option value="{{ date['id'] }}">{{ date['full_date'] }}</option>
@@ -60,33 +90,46 @@
           <!-- DATES -->
         </select>
       </div>
-      <button type="submit">Visualize Data (PER TOKO TEST)</button>
+      <br />
+      <button type="submit" class="btn btn-primary">Visualize Data</button>
     </form>
 
     <!-- JS Code -->
     <script>
-      let graphCanvas = document.getElementById("data-visualization");
-      let chartContainer =
+      const graphCanvas = document.getElementById("data-visualization");
+      const chartContainer =
         document.getElementsByClassName("chart-container")[0];
-      let rawData = "{{ graph_data }}"
+      const rawData = "{{ graph_data }}"
         .replace(/&#39;/g, "'")
         .replace(/'/g, '"');
       if (!rawData) {
-        chartContainer.innerText = "DO A QUERY";
+        graphCanvas.style.height = "0";
+        let card = document.createElement("div");
+        card.classList.add("card");
+
+        let cardBody = document.createElement("div");
+        cardBody.textContent = "Select a store name to display graph.";
+        cardBody.classList.add("card-body", "text-secondary");
+
+        card.appendChild(cardBody);
+        chartContainer.appendChild(card);
       }
-      let data = JSON.parse(rawData);
+      const data = JSON.parse(rawData);
       //   console.log(data);
       //   console.log(JSON.parse(rawData));
-      const myChat = new Chart(graphCanvas, {
+      const myChart = new Chart(graphCanvas, {
         type: "bar",
         options: {
           animation: true,
+          scales: {
+            y: { ticks: { callback: (value) => `Rp ${value}` } },
+          },
           plugins: {
             legend: {
               display: true,
             },
             tooltip: {
-              enabled: false,
+              enabled: true,
             },
           },
         },
@@ -101,5 +144,10 @@
         },
       });
     </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
   </body>
 </html>

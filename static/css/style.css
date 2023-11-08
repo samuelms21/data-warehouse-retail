@@ -7,10 +7,15 @@
   display: flex;
 }
 .chart-container {
-  max-height: 500px;
   max-width: 500px;
   margin: 20px 0;
 }
+.select-container {
+  width: 50%;
+}
 .select-container > select {
   margin-right: 10px;
+}
+body {
+  padding: 20px;
 }
