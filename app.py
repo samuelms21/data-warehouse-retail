@@ -100,6 +100,19 @@ def visualize_data():
     selected_product = request.form.get('select_product')
     selected_date = request.form.get('select_date')
 
+    # Per Toko
+    # Pada toko A, berapa total penjualan setiap produk, pada setiap tanggal
+    query = """
+        SELECT store.name AS x, 
+                SUM(product.price * transaction_details.qty) - SUM(product.init_price * transaction_details.qty) AS y
+        FROM product
+        INNER JOIN transaction_details ON product.id = transaction_details.product_id
+        INNER JOIN transaction ON transaction.id = transaction_details.transaction_id
+        INNER JOIN store ON store.id = transaction.store_id
+        GROUP BY store.name
+    """
+    data = pd.read_sql(query, db.engine)
+    return render_template('index.html', graph_data=data.to_dict(orient='records'))
 
 if __name__ == "__main__":
     app.run(debug=os.environ.get('DEBUG'))

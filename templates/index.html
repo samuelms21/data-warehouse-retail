@@ -28,6 +28,7 @@
 
     <br />
     <h3>Test Chart.js by Sam</h3>
+    <p>CURRENT DEFAULT: PER TOKO</p>
     <div class="chart-container">
       <canvas id="data-visualization"></canvas>
     </div>
@@ -35,7 +36,7 @@
     <form action="/visualize_data" method="post">
       <div class="flex-container select-container">
         <!-- STORES -->
-        <select name="select_store" id="select_store">
+        <select name="select_store" id="select_store" disabled>
           <option value="">Select a Store</option>
           {% for store in stores %}
           <option value="{{ store['id'] }}">{{ store['name'] }}</option>
@@ -43,7 +44,7 @@
         </select>
         <!-- STORES -->
         <!-- PRODUCT -->
-        <select name="select_products" id="select_products">
+        <select name="select_products" id="select_products" disabled>
           <option value="">Select a Product</option>
           {% for product in products %}
           <option value="{{ product['id'] }}">{{ product['name'] }}</option>
@@ -51,7 +52,7 @@
         </select>
         <!-- PRODUCT -->
         <!-- DATES -->
-        <select name="select_date" id="select_date">
+        <select name="select_date" id="select_date" disabled>
           <option value="">Select a Date</option>
           {% for date in dates %}
           <option value="{{ date['id'] }}">{{ date['full_date'] }}</option>
@@ -59,16 +60,23 @@
           <!-- DATES -->
         </select>
       </div>
-      <button type="submit">Visualize Data</button>
+      <button type="submit">Visualize Data (PER TOKO TEST)</button>
     </form>
 
     <!-- JS Code -->
     <script>
       let graphCanvas = document.getElementById("data-visualization");
-      let rawData = "{{ stores }}".replace(/&#39;/g, "'").replace(/'/g, '"');
+      let chartContainer =
+        document.getElementsByClassName("chart-container")[0];
+      let rawData = "{{ graph_data }}"
+        .replace(/&#39;/g, "'")
+        .replace(/'/g, '"');
+      if (!rawData) {
+        chartContainer.innerText = "DO A QUERY";
+      }
       let data = JSON.parse(rawData);
-      // console.log(data);
-      // console.log(JSON.parse(rawData));
+      //   console.log(data);
+      //   console.log(JSON.parse(rawData));
       const myChat = new Chart(graphCanvas, {
         type: "bar",
         options: {
@@ -78,16 +86,16 @@
               display: true,
             },
             tooltip: {
-              enabled: true,
+              enabled: false,
             },
           },
         },
         data: {
-          labels: data.map((row) => row.name),
+          labels: data.map((row) => row.x),
           datasets: [
             {
-              label: "Acquisitions by year",
-              data: data.map((row) => row.id),
+              label: "Keuntungan Bersih Per Toko",
+              data: data.map((row) => row.y),
             },
           ],
         },
