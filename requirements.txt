@@ -6,3 +6,4 @@ matplotlib
 numpy
 mysqlclient
 python-dotenv
+seaborn
