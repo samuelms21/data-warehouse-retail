@@ -3,3 +3,5 @@ data-warehouse/*
 package-lock.json
 node_modules/*
 .env
+*.sql
+*.ipynb
