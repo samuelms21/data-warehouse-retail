@@ -4,6 +4,6 @@ sqlalchemy
 flask_sqlalchemy
 matplotlib
 numpy
-mysqlclient
+pymysql
 python-dotenv
 seaborn
