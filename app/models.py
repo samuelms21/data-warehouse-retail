@@ -14,6 +14,8 @@ class Store(db.Model):
     address: so.Mapped[str] = so.mapped_column(sa.String(54))
     phone: so.Mapped[str] = so.mapped_column(sa.String(54))
 
+    transactions: so.WriteOnlyMapped['Transaction'] = so.relationship(back_populates='store')
+
     def __repr__(self) -> str:
         return '<Store {}>'.format(self.name)
 
@@ -32,7 +34,9 @@ class DateModel(db.Model):
     month_of_year: so.Mapped[int] = so.mapped_column(sa.Integer)
     year_of_date: so.Mapped[int] = so.mapped_column(sa.Integer)
     an_event: so.Mapped[bool] = so.mapped_column(sa.Boolean)
-    event_name: so.Mapped[str] = so.mapped_column(sa.String(99))
+    event_name: so.Mapped[str] = so.mapped_column(sa.String(100), nullable=True, default=None)
+
+    transactions: so.WriteOnlyMapped['Transaction'] = so.relationship(back_populates='date_model')
 
     def __repr__(self) -> str:
         return '<Date {}>'.format(self.full_date)
@@ -42,10 +46,12 @@ class Product(db.Model):
     __tablename__ = "products"
 
     id: so.Mapped[str] = so.mapped_column(sa.String(36),primary_key=True, unique=True, default=lambda: str(uuid.uuid4()))
-    name: so.Mapped[str] = so.mapped_column(sa.String(54))
-    qty: so.Mapped[int] = so.mapped_column(sa.Integer)
-    price: so.Mapped[int] = so.mapped_column(sa.Integer)
-    init_price: so.Mapped[int] = so.mapped_column(sa.Integer)
+    name: so.Mapped[str] = so.mapped_column(sa.String(100))
+    brand: so.Mapped[str] = so.mapped_column(sa.String(100))
+    category: so.Mapped[str] = so.mapped_column(sa.String(100))
+    department: so.Mapped[str] = so.mapped_column(sa.String(100))
+
+    transactions: so.WriteOnlyMapped['Transaction'] = so.relationship(back_populates='product')
 
     def __repr__(self) -> str:
         return '<Product {}'.format(self.name)
@@ -59,5 +65,22 @@ class Transaction(db.Model):
     store_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(Store.id), index=True)
     date_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(DateModel.id), index=True)
     product_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(Product.id), index=True)
-    qty: so.Mapped[int] = so.mapped_column(sa.Integer)
+
+    sales_qty: so.Mapped[int] = so.mapped_column(sa.Integer) 
+    unit_cost: so.Mapped[float] = so.mapped_column(sa.Float)
+    regular_unit_price: so.Mapped[float] = so.mapped_column(sa.Float)
+    discount_unit_price: so.Mapped[float] = so.mapped_column(sa.Float)
+    net_unit_price: so.Mapped[float] = so.mapped_column(sa.Float)
+    extended_discount_dollar_amount: so.Mapped[float] = so.mapped_column(sa.Float)
+    extended_sales_dollar_amount: so.Mapped[float] = so.mapped_column(sa.Float)
+    extended_cost_dollar_amount: so.Mapped[float] = so.mapped_column(sa.Float)
+    extended_gross_profit_dollar_amount: so.Mapped[float] = so.mapped_column(sa.Float)
     created_at: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now())
+
+    store: so.Mapped[Store] = so.relationship(back_populates='transactions')
+    product: so.Mapped[Product] = so.relationship(back_populates='transactions')
+    date_model: so.Mapped[DateModel] = so.relationship(back_populates='transactions')
+
+
+    def __repr__(self) -> str:
+        return '<Transaction {}>'.format(self.id)
