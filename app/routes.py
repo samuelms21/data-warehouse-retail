@@ -5,3 +5,7 @@ from app import app
 @app.route("/index")
 def index():
     return "Hello World"
+
+@app.route("/products/{product_id}/")
+def get_products(product_id):
+    pass
