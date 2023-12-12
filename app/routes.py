@@ -106,3 +106,5 @@ def get_transactions():
         serialized_transactions.append(item)
 
     return jsonify(serialized_transactions)
+
+
