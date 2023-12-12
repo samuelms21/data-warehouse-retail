@@ -1,7 +1,8 @@
 flask
 pandas
 sqlalchemy
-flask_sqlalchemy
+flask-sqlalchemy
+flask-migrate
 matplotlib
 numpy
 pymysql

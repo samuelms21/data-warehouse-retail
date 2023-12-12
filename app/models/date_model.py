@@ -1,7 +1,8 @@
 from app.extensions import db
+import uuid
 
 class DateModel(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,default=lambda: str(uuid.uuid4()))
     full_date = db.Column(db.Date, default=None)
     day_name = db.Column(db.String(9), default=None)
     day_of_week = db.Column(db.Integer, default=None)
