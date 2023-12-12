@@ -1,10 +1,6 @@
 flask
 pandas
-sqlalchemy
 flask-sqlalchemy
 flask-migrate
-matplotlib
-numpy
 pymysql
 python-dotenv
-seaborn

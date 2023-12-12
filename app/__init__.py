@@ -1,23 +1,14 @@
-# app/__init__.py
-
 from flask import Flask
+from config import Config
 from flask_sqlalchemy import SQLAlchemy
-from .config import Config
-from .extensions import db
-from .routes.store_routes import store_bp
+from flask_migrate import Migrate
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    db = SQLAlchemy(app)
 
-    db.init_app(app)
+app = Flask(__name__)
+app.config.from_object(Config)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
-    from .models import store_model
 
-    with app.app_context():
-        db.create_all()
-
-    app.register_blueprint(store_bp)
-
-    return app
+# A workaround to avoid circular imports
+from app import routes, models

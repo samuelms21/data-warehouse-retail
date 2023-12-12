@@ -1,7 +1,8 @@
 venv/*
-data-warehouse/*
 package-lock.json
 node_modules/*
+.flaskenv
 .env
 *.sql
 *.ipynb
+app/__pycache__/*
