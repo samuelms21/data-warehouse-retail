@@ -9,8 +9,14 @@
 
 <script>
 import MyNavigation from "@/components/MyNavigation.vue";
+import { useFetchedStore } from "./stores/Fetched";
 
 export default {
+  setup() {
+    const myStore = useFetchedStore();
+    myStore.callAPIs();
+    return { myStore };
+  },
   components: { MyNavigation },
 };
 </script>
