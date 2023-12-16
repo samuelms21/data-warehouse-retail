@@ -54,7 +54,7 @@ class Product(db.Model):
     transactions: so.WriteOnlyMapped['Transaction'] = so.relationship(back_populates='product')
 
     def __repr__(self) -> str:
-        return '<Product {}'.format(self.name)
+        return '<Product {}>'.format(self.name)
 
 
 # Update Transactions table (read Kimball on retail sales)
