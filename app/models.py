@@ -39,7 +39,7 @@ class DateModel(db.Model):
     transactions: so.WriteOnlyMapped['Transaction'] = so.relationship(back_populates='date_model')
 
     def __repr__(self) -> str:
-        return '<Date {}>'.format(self.full_date)
+        return '<Date: {}>'.format(self.full_date.strftime('%B %d, %Y'))
     
 
 class Product(db.Model):

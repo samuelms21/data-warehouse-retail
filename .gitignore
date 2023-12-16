@@ -6,3 +6,5 @@ node_modules/*
 *.sql
 *.ipynb
 __pycache__/*
+app/__pycache__/*
+dummy_text.txt

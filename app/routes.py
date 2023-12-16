@@ -1,5 +1,5 @@
 from app import app, db
-from flask import jsonify, request
+from flask import jsonify, request, make_response
 import sqlalchemy as sa
 from app.models import Product, Store, DateModel, Transaction
 
@@ -29,6 +29,110 @@ def get_products():
         serialized_products.append(item)
 
     return jsonify(serialized_products)
+
+
+# Quantity of Items Sold
+@app.route("/qty_items_sold", methods=["GET"])
+def get_qty_of_items_sold():
+    """
+    Required parameter: date_id (or just date)
+
+    groupby (required): mau di groupby berdasarkan apa -> "store" or "product"
+
+    store_id
+    product_id
+
+    SQL Query if group_by = store:
+    SELECT
+        dates.full_date,
+        stores.name AS store_name,
+        SUM(transactions.sales_qty) AS total_sales_qty
+    FROM
+        stores
+    INNER JOIN transactions ON stores.id = transactions.store_id
+    INNER JOIN dates ON transactions.date_id = dates.id
+    WHERE
+        dates.id = "e6137ef3-b92b-4c7d-aa93-3ffdccf1f030"
+        
+        -- if store_id is provided:
+        -- kemayoran store
+        -- AND stores.id = "c7fda58c-aa0c-4766-b21f-7eb8a388bdd0"
+        
+        -- bekasi store
+        -- AND stores.id = "2e67025f-29bd-4861-b4d2-2fa0d780564a"
+
+    GROUP BY stores.id;
+
+    Ex 1: {{BASE_URL}}/qty_items_sold?group_by=store&date_id=e6137ef3-b92b-4c7d-aa93-3ffdccf1f030
+    -> group_by = store
+    -> date_id = e6137ef3-b92b-4c7d-aa93-3ffdccf1f030
+    -> Return total jumlah item yang terjual di masing-masing toko yang sudah merekam transaksi pada tanggal {date_id}
+
+    Ex 2: {{BASE_URL}}/qty_items_sold?group_by=store&date_id=e6137ef3-b92b-4c7d-aa93-3ffdccf1f030&store_id=c7fda58c-aa0c-4766-b21f-7eb8a388bdd0
+    -> group_by = store
+    -> date_id = e6137ef3-b92b-4c7d-aa93-3ffdccf1f030
+    -> store_id = c7fda58c-aa0c-4766-b21f-7eb8a388bdd0
+    -> Return total jumlah item yang terjual pada toko {store_id} pada tanggal {date_id}
+
+    SQL Query if group_by = product;
+    """
+
+    # Mungkin date_id bakalan susah dibaca (karena pake UUID)
+    # Saran (sam): Mungkin kita pake full_date aja
+    date_id = request.args.get("date_id")
+    
+    if not date_id:
+        error_response = make_response(jsonify({"error": "Bad Request. Date ID not provided."}, 400))
+        return error_response
+    
+    groupby = request.args.get("group_by")
+    
+    if not groupby:
+        error_response = make_response(jsonify({"error": "Bad Request. Groupby criteria not provided."}), 400)
+        return error_response
+
+
+    product_id = request.args.get("product_id")
+    store_id = request.args.get("store_id")
+
+
+    if groupby == "store":
+        if store_id:
+            query = db.session.query(
+                    DateModel.full_date,
+                    Store.name.label('store_name'),
+                    db.func.sum(Transaction.sales_qty).label('total_sales_qty')
+                ).join(Transaction, DateModel.id == Transaction.date_id).join(Store, Store.id == Transaction.store_id).filter(DateModel.id == date_id).filter(Store.id == store_id).first()
+            
+            serialized_result = {
+                "full_date": query.full_date.strftime('%B %d, %Y'),
+                "store_name": query.store_name,
+                "total_sales_qty": query.total_sales_qty
+            }
+
+            return jsonify(serialized_result)
+
+        else:    
+            query = db.session.query(
+                    DateModel.full_date,
+                    Store.name.label('store_name'),
+                    db.func.sum(Transaction.sales_qty).label('total_sales_qty')
+                ).join(Transaction, DateModel.id == Transaction.date_id).join(Store, Store.id == Transaction.store_id).filter(DateModel.id == date_id).group_by(Store.id).all()
+            
+            serialized_results = []
+
+            for row in query:
+                item = {
+                    "full_date": row.full_date.strftime('%B %d, %Y'),
+                    "store_name": row.store_name,
+                    "total_sales_qty": row.total_sales_qty
+                }
+                serialized_results.append(item)
+
+            return jsonify(serialized_results)
+
+
+    return {"message": "testing route qty_items_sold"}
 
 
 # Retrieve all stores
