@@ -37,11 +37,18 @@ def get_qty_of_items_sold():
     """
     Required parameter: date_id (or just date)
 
-    groupby (required): mau di groupby berdasarkan apa -> "store" or "product"
+    groupby (optional): mau di groupby berdasarkan apa -> "store" or "product"
 
     store_id
     product_id
 
+    If both "store_id" and "product_id" are provided: 
+    -> Berapa total jumlah item yang terjual untuk produk {product_id} di toko {store_id} pada tanggal {date_id}
+    -> Ex: {{BASE_URL}}/qty_items_sold?date_id=e6137ef3-b92b-4c7d-aa93-3ffdccf1f030&store_id=c7fda58c-aa0c-4766-b21f-7eb8a388bdd0&product_id=e08cbee7-4ceb-4d48-9b22-3690833ed5fa
+    -> group_by = None (emang ga perlu untuk query ini)
+    -> store_id = c7fda58c-aa0c-4766-b21f-7eb8a388bdd0
+    -> product_id = e08cbee7-4ceb-4d48-9b22-3690833ed5fa
+    
     SQL Query if group_by = store:
     SELECT
         dates.full_date,
@@ -74,7 +81,42 @@ def get_qty_of_items_sold():
     -> store_id = c7fda58c-aa0c-4766-b21f-7eb8a388bdd0
     -> Return total jumlah item yang terjual pada toko {store_id} pada tanggal {date_id}
 
-    SQL Query if group_by = product;
+    
+    SQL Query if group_by = product
+    SELECT
+        dates.full_date,
+        products.name AS product_name,
+        products.brand AS product_brand,
+        products.category AS product_category,
+        products.department AS product_department,
+        SUM(transactions.sales_qty) AS total_sales_qty
+    FROM
+        products
+    INNER JOIN transactions ON products.id = transactions.product_id
+    INNER JOIN dates ON transactions.date_id = dates.id
+    WHERE
+        dates.id = "e6137ef3-b92b-4c7d-aa93-3ffdccf1f030"
+        
+        -- if product_id is provided:
+        -- mentega
+        -- AND products.id = "e08cbee7-4ceb-4d48-9b22-3690833ed5fa"
+
+        -- sikat gigi (dan seterusnya)
+        -- AND products.id = "7ce11f04-c3ec-455a-82cc-15385fa09a87"
+
+    GROUP BY
+        products.id;
+
+    Ex 3: {{BASE_URL}}/qty_items_sold?group_by=product&date_id=e6137ef3-b92b-4c7d-aa93-3ffdccf1f030
+    -> group_by = product
+    -> date_id = e6137ef3-b92b-4c7d-aa93-3ffdccf1f030
+    -> Return total jumlah item yang terjual untuk setiap produk yang ada pada tanggal {date_id}
+
+    Ex 4: {{BASE_URL}}/qty_items_sold?group_by=product&date_id=e6137ef3-b92b-4c7d-aa93-3ffdccf1f030&product_id=e08cbee7-4ceb-4d48-9b22-3690833ed5fa
+    -> group_by = product
+    -> date_id = e6137ef3-b92b-4c7d-aa93-3ffdccf1f030
+    -> product_id = e08cbee7-4ceb-4d48-9b22-3690833ed5fa
+    -> Return total jumlah item yang terjual untuk produk {product_id} pada tanggal {date_id}
     """
 
     # Mungkin date_id bakalan susah dibaca (karena pake UUID)
@@ -86,12 +128,6 @@ def get_qty_of_items_sold():
         return error_response
     
     groupby = request.args.get("group_by")
-    
-    if not groupby:
-        error_response = make_response(jsonify({"error": "Bad Request. Groupby criteria not provided."}), 400)
-        return error_response
-
-
     product_id = request.args.get("product_id")
     store_id = request.args.get("store_id")
 
@@ -131,6 +167,78 @@ def get_qty_of_items_sold():
 
             return jsonify(serialized_results)
 
+    if groupby == "product":
+        if product_id:
+            query = db.session.query(
+                        DateModel.full_date,
+                        Product.name.label('product_name'),
+                        Product.brand.label('product_brand'),
+                        Product.category.label('product_category'),
+                        Product.department.label('product_department'),
+                        db.func.sum(Transaction.sales_qty).label('total_sales_qty')
+                    ).join(Transaction, Product.id == Transaction.product_id).join(DateModel, Transaction.date_id == DateModel.id).filter(DateModel.id == date_id).filter(Product.id == product_id).group_by(Product.id).first()
+            
+            serialized_result = {
+                "full_date": query.full_date,
+                "product_name": query.product_name,
+                "product_brand": query.product_brand,
+                "product_category": query.product_category,
+                "product_department": query.product_department,
+                "total_sales_qty": query.total_sales_qty,
+            }
+
+            return jsonify(serialized_result)
+
+        else:
+            query = db.session.query(
+                        DateModel.full_date,
+                        Product.name.label('product_name'),
+                        Product.brand.label('product_brand'),
+                        Product.category.label('product_category'),
+                        Product.department.label('product_department'),
+                        db.func.sum(Transaction.sales_qty).label('total_sales_qty')
+                    ).join(Transaction, Product.id == Transaction.product_id).join(DateModel, Transaction.date_id == DateModel.id).filter(DateModel.id == date_id).group_by(Product.id).all()
+            
+            serialized_results = []
+            for row in query:
+                item = {
+                    "full_date": row.full_date,
+                    "product_name": row.product_name,
+                    "product_brand": row.product_brand,
+                    "product_category": row.product_category,
+                    "product_department": row.product_department,
+                    "total_sales_qty": row.total_sales_qty,
+                }
+                serialized_results.append(item)
+
+            return jsonify(serialized_results)
+
+    if not groupby:
+        if not product_id or not store_id:
+            error_response = make_response(jsonify({"error": "Both product_id and store_id have to be provided for this case."}, 400))
+            return error_response
+        
+        query = db.session.query(
+                    DateModel.full_date,
+                    Store.name.label('store_name'),
+                    Product.name.label('product_name'),
+                    Product.brand.label('product_brand'),
+                    Product.category.label('product_category'),
+                    Product.department.label('product_department'),
+                    db.func.sum(Transaction.sales_qty).label('total_sales_qty')
+                ).join(Transaction, Product.id == Transaction.product_id).join(DateModel, Transaction.date_id == DateModel.id).join(Store, Transaction.store_id == Store.id).filter(DateModel.id == date_id).filter(Product.id == product_id).filter(Store.id == store_id).group_by(Product.id).all()
+        
+        serialized_result = {
+            "full_date": query.full_date,
+            "store_name": query.store_name,
+            "product_name": query.product_name,
+            "product_brand": query.product_brand,
+            "product_category": query.product_category,
+            "product_department": query.product_department,
+            "total_sales_qty": query.total_sales_qty,
+        }
+
+        return jsonify(serialized_result)
 
     return {"message": "testing route qty_items_sold"}
 
