@@ -1,8 +1,12 @@
 <template>
-  <v-card :title="title" :subtitle="subtitle" class="elevation-4"> </v-card>
+  <v-col :cols="cols">
+    <v-card :title="title" :subtitle="subtitle" class="elevation-4">
+      <slot> </slot>
+    </v-card>
+  </v-col>
 </template>
 <script>
 export default {
-  props: ["title", "subtitle"],
+  props: ["cols", "title", "subtitle"],
 };
 </script>

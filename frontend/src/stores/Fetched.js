@@ -6,7 +6,8 @@ export const useFetchedStore = defineStore("fetchedStore", {
     products: [],
     stores: [],
     transactions: [],
-    name: "Jason",
+    qty_solds: [],
+    total_sales: [],
   }),
   actions: {
     async callAPIs() {
@@ -28,6 +29,22 @@ export const useFetchedStore = defineStore("fetchedStore", {
           "http://127.0.0.1:5000/transactions"
         );
         this.transactions = await transactionsResponse.json();
+      } catch (error) {
+        console.error(error.message);
+      }
+    },
+    async getQuantityOfItemsSold(dateId, storeId = null, productId = null) {
+      // console.log(
+      //   `WIII: ${dateId}, ${storeId}, ${productId ? productId : ""},`
+      // );
+      try {
+        // dates
+        const qtySoldsResponse = await fetch(
+          `http://127.0.0.1:5000/qty_items_sold?group_by=store&date_id=${dateId}&store_id=${
+            storeId ? storeId : ""
+          }&product_id=${productId ? productId : ""}`
+        );
+        this.qty_solds = await qtySoldsResponse.json();
       } catch (error) {
         console.error(error.message);
       }

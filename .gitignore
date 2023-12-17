@@ -8,3 +8,7 @@ node_modules/*
 __pycache__/*
 app/__pycache__/*
 dummy_text.txt
+
+.DS_Store
+node_modules
+/dist
