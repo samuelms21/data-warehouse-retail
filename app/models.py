@@ -57,7 +57,6 @@ class Product(db.Model):
         return '<Product {}>'.format(self.name)
 
 
-# Update Transactions table (read Kimball on retail sales)
 class Transaction(db.Model):
     __tablename__ = "transactions"
 
