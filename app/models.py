@@ -1,8 +1,10 @@
 from typing import Optional
 from datetime import date, datetime, timezone
 import uuid
+
 import sqlalchemy as sa
 import sqlalchemy.orm as so
+
 from app import db
 
 

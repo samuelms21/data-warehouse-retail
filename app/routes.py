@@ -394,6 +394,212 @@ def get_total_sales():
 
 
 ### TOTAL PROFIT (EXTENDED_GROSS_PROFIT = EXTENDED_SALES_DOLLAR_AMOUNT - EXTENDED_COST_DOLLAR_AMOUNT)
+@app.route("/gross_profit", methods=["GET"])
+def get_gross_profit():
+    groupby = request.args.get("group_by")
+    date_id = request.args.get("date_id")
+    start_date_id = request.args.get("start_date_id")
+    end_date_id = request.args.get("end_date_id")
+
+    if groupby == "product":
+
+        # Berarti total sales per produk untuk 1 hari saja
+        if date_id:
+            """
+            SQL Query
+            SELECT
+                products.id AS product_id
+                products.name AS product_name,
+                products.brand AS product_brand,
+                products.category AS product_category,
+                products.department AS product_department,
+                SUM(transactions.extended_gross_profit_dollar_amount) AS total_gross_profit
+            FROM
+                products
+            INNER JOIN transactions ON products.id = transactions.product_id
+            INNER JOIN dates ON transactions.date_id = dates.id
+            WHERE
+                dates.id = '{some_date_id}'
+            GROUP BY
+                products.id;
+            """
+            results = db.session.query(
+                        Product.id.label('product_id'),
+                        Product.name.label('product_name'),
+                        Product.brand.label('product_brand'),
+                        Product.category.label('product_category'),
+                        Product.department.label('product_department'),
+                        db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit')
+                    ).join(
+                        Transaction, Product.id == Transaction.product_id
+                    ).join(
+                        DateModel, Transaction.date_id == DateModel.id
+                    ).filter(
+                        DateModel.id == date_id
+                    ).group_by(
+                        Product.id
+                    ).all()
+            
+            serialized_results = []
+            
+            for row in results:
+                item = {
+                    "product_id": row.product_id,
+                    "product_name": row.product_name,
+                    "product_brand": row.product_brand,
+                    "product_category": row.product_category,
+                    "product_department": row.product_department,
+                    "total_gross_profit": row.total_gross_profit
+                }
+                serialized_results.append(item)
+
+            return jsonify(serialized_results)
+        
+        # Berarti total sales per produk untuk jangka waktu tertentu
+        if start_date_id and end_date_id:
+            """
+            SQL Query:
+            SELECT
+                products.id AS product_id,
+                products.name AS product_name,
+                products.brand AS product_brand,
+                products.category AS product_category,
+                products.department AS product_department,
+                SUM(transactions.extended_gross_profit_dollar_amount) AS total_gross_profit
+            FROM
+                products
+            INNER JOIN transactions ON products.id = transactions.product_id
+            INNER JOIN dates ON transactions.date_id = dates.id
+            WHERE
+                dates.full_date >= (
+                    SELECT full_date
+                    FROM dates
+                    WHERE id = '{start_date_id}'
+                )
+                AND dates.full_date <= (
+                    SELECT full_date
+                    FROM dates
+                    WHERE id = '{end_date_id}
+                )
+            GROUP BY
+                products.id;
+            """
+            results = db.session.query(
+                Product.id.label('product_id'),
+                Product.name.label('product_name'),
+                Product.brand.label('product_brand'),
+                Product.category.label('product_category'),
+                Product.department.label('product_department'),
+                db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit')
+            ).join(Transaction, Product.id == Transaction.product_id) \
+            .join(DateModel, Transaction.date_id == DateModel.id) \
+            .filter(DateModel.full_date.between(
+                db.session.query(DateModel.full_date).filter(DateModel.id == start_date_id),
+                db.session.query(DateModel.full_date).filter(DateModel.id == end_date_id)
+            )).group_by(Product.id).all()
+
+            # Extracting values into a list of dictionaries
+            result_list = [
+                {
+                    'product_id': result.product_id,
+                    'product_name': result.product_name,
+                    'product_brand': result.product_brand,
+                    'product_category': result.product_category,
+                    'product_department': result.product_department,
+                    'total_gross_profit': result.total_gross_profit
+                }
+                for result in results
+            ]
+
+            return jsonify(result_list)
+
+    if groupby == "store":
+        # Berarti total sales per toko untuk 1 hari saja
+        if date_id:
+            """
+            SQL Query:
+            SELECT
+                stores.id AS store_id,
+                stores.name AS store_name,
+                SUM(transactions.extended_gross_profit_dollar_amount) AS total_gross_profit
+            FROM
+                stores
+            INNER JOIN transactions ON stores.id = transactions.store_id
+            INNER JOIN dates ON transactions.date_id = dates.id
+            WHERE
+                dates.id = "{some_date_id}"
+            GROUP BY
+                stores.id;
+            """
+            results = db.session.query(
+                            Store.id.label("store_id"),
+                            Store.name.label("store_name"),
+                            db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit')
+                        ).join(Transaction, Store.id == Transaction.store_id) \
+                        .join(DateModel, Transaction.date_id == DateModel.id) \
+                        .filter(DateModel.id == date_id) \
+                        .group_by(Store.id).all()
+
+            # Extracting values into a list of dictionaries
+            result_list = [
+                {
+                    'store_id': result.store_id,
+                    'store_name': result.store_name,
+                    'total_gross_profit': result.total_gross_profit
+                }
+                for result in results
+            ]
+
+            return jsonify(result_list)
+        
+        # Berarti total sales per toko untuk jangka waktu tertentu
+        if start_date_id and end_date_id:
+            """
+            SQL Query:
+            SELECT
+                stores.id AS store_id,
+                stores.name AS store_name,
+                SUM(transactions.extended_gross_profit_dollar_amount) AS total_gross_profit
+            FROM
+                stores
+            INNER JOIN transactions ON stores.id = transactions.store_id
+            INNER JOIN dates ON transactions.date_id = dates.id
+            WHERE
+                dates.full_date >= (
+                    SELECT full_date
+                    FROM dates
+                    WHERE id = '{start_date_id}'
+                )
+                AND dates.full_date <= (
+                    SELECT full_date
+                    FROM dates
+                    WHERE id = '{end_date_id}'
+                )
+            GROUP BY
+                stores.id;
+            """
+            results = db.session.query(
+                Store.id.label('store_id'),
+                Store.name.label('store_name'),
+                db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit')
+            ).join(Transaction, Store.id == Transaction.store_id) \
+            .join(DateModel, Transaction.date_id == DateModel.id) \
+            .filter(DateModel.full_date.between(
+                db.session.query(DateModel.full_date).filter(DateModel.id == start_date_id),
+                db.session.query(DateModel.full_date).filter(DateModel.id == end_date_id)
+            )).group_by(Store.id).all()
+
+            # Extracting values into a list of dictionaries
+            result_list = [
+                {
+                    'store_id': result.store_id,
+                    'store_name': result.store_name,
+                    'total_gross_profit': result.total_gross_profit
+                }
+                for result in results
+            ]
+
+            return jsonify(result_list)
 ### TOTAL PROFIT (EXTENDED_GROSS_PROFIT = EXTENDED_SALES_DOLLAR_AMOUNT - EXTENDED_COST_DOLLAR_AMOUNT)
 
 
