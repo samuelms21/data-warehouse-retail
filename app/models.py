@@ -59,6 +59,19 @@ class Product(db.Model):
         return '<Product {}>'.format(self.name)
 
 
+# Factless Fact Table
+class Promotion(db.Model):
+    __tablename__ = "promotions"
+
+    id: so.Mapped[str] = so.mapped_column(sa.String(36),primary_key=True, unique=True, default=lambda: str(uuid.uuid4()))
+    name: so.Mapped[str] = so.mapped_column(sa.String(100))
+    start_date: so.Mapped[date] = so.mapped_column(sa.Date())
+    end_date: so.Mapped[date] = so.mapped_column(sa.Date())
+
+    def __repr__(self) -> str:
+        return '<Promotion: {}>'.format(self.name)
+
+
 class Transaction(db.Model):
     __tablename__ = "transactions"
 
@@ -66,6 +79,7 @@ class Transaction(db.Model):
     store_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(Store.id), index=True)
     date_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(DateModel.id), index=True)
     product_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(Product.id), index=True)
+    promotion_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey(Promotion.id), index=True)
 
     sales_qty: so.Mapped[int] = so.mapped_column(sa.Integer) 
     unit_cost: so.Mapped[float] = so.mapped_column(sa.Float)
@@ -85,3 +99,4 @@ class Transaction(db.Model):
 
     def __repr__(self) -> str:
         return '<Transaction {}>'.format(self.id)
+    

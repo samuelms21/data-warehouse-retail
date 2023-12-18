@@ -1,7 +1,7 @@
 from app import app, db
 from flask import jsonify, request, make_response
 import sqlalchemy as sa
-from app.models import Product, Store, DateModel, Transaction
+from app.models import Product, Store, DateModel, Transaction, Promotion
 
 @app.route("/")
 @app.route("/index")
@@ -727,6 +727,47 @@ def get_gross_margin():
 
             return jsonify(result_dicts)
 ### NON-ADDITIVE
+        
+
+### FACTLESS FACT (PROMOTIONS)
+# “Produk apa yang tidak terjual pada masa promosi?”
+# Pertanyaan diatas tidak belum bisa dijawab dengan fact table yang ada pada saat ini.
+        
+@app.route("/factless_fact_promotions", methods=["GET"])
+def get_factless_fact_promotions():
+    promotion_id = request.args.get("promotion_id")
+    # Convert SQL query to Flask-SQLAlchemy query
+    raw_sql_query = sa.text(f"""
+        SELECT products.id AS ProductID, products.name AS ProductName
+        FROM products
+        WHERE products.id NOT IN (
+            SELECT t.product_id
+            FROM transactions t
+            JOIN dates d ON t.date_id = d.id
+            JOIN promotions p ON t.promotion_id = p.id
+            WHERE p.id = '{promotion_id}'
+            AND d.full_date >= p.start_date
+            AND d.full_date <= p.end_date
+        );
+    """)
+
+    # Execute the raw SQL query
+    result = db.session.execute(raw_sql_query)
+
+    # Fetch the results
+    products = result.fetchall()
+
+    serialized_products = []
+    for row in products:
+        item = {
+            'product_id': row[0],
+            'product_name': row[1]
+        }
+        serialized_products.append(item)
+
+    return jsonify(serialized_products)
+
+### FACTLESS FACT (PROMOTIONS)
 
 
 # Retrieve all stores
