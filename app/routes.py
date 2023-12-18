@@ -101,7 +101,9 @@ def handle_no_group(date_id, product_id, store_id):
     # Build the query
     query = db.session.query(
         DateModel.full_date,
+        Store.id.label('store_id'),
         Store.name.label('store_name'),
+        Product.id.label('product_id'),
         Product.name.label('product_name'),
         Product.brand.label('product_brand'),
         Product.category.label('product_category'),
@@ -110,7 +112,7 @@ def handle_no_group(date_id, product_id, store_id):
     ).join(Transaction, Product.id == Transaction.product_id).join(DateModel, Transaction.date_id == DateModel.id).join(Store, Transaction.store_id == Store.id).filter(DateModel.id == date_id).filter(Product.id == product_id).filter(Store.id == store_id)
 
     # Serialize the results and return them as a JSON response
-    return jsonify(serialize_product_results(query.all()))
+    return jsonify(serialize_product_store_results(query.all()))
 
 # Serialize the results for the case where group_by is "store"
 def serialize_store_results(results):
@@ -127,6 +129,23 @@ def serialize_store_results(results):
 def serialize_product_results(results):
     return [
         {
+            "product_id": row.product_id,
+            "full_date": row.full_date.strftime('%B %d, %Y'),
+            "product_name": row.product_name,
+            "product_brand": row.product_brand,
+            "product_category": row.product_category,
+            "product_department": row.product_department,
+            "total_sales_qty": row.total_sales_qty,
+        } for row in results
+    ]
+
+
+# Serialize the results for the case where group_by is "product" or not provided
+def serialize_product_store_results(results):
+    return [
+        {
+            "store_id": row.store_id,
+            "store_name": row.store_name,
             "product_id": row.product_id,
             "full_date": row.full_date.strftime('%B %d, %Y'),
             "product_name": row.product_name,
