@@ -603,6 +603,132 @@ def get_gross_profit():
 ### TOTAL PROFIT (EXTENDED_GROSS_PROFIT = EXTENDED_SALES_DOLLAR_AMOUNT - EXTENDED_COST_DOLLAR_AMOUNT)
 
 
+### NON-ADDITIVE
+@app.route("/gross_margin", methods=["GET"])
+def get_gross_margin():
+    groupby = request.args.get("group_by")
+    date_id = request.args.get("date_id")
+    start_date_id = request.args.get("start_date_id")
+    end_date_id = request.args.get("end_date_id")
+
+    if groupby == "product":
+        if date_id:
+            results = db.session.query(
+                Product.id.label('product_id'),
+                Product.name.label('product_name'),
+                Product.brand.label('product_brand'),
+                Product.category.label('product_category'),
+                Product.department.label('product_department'),
+                db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit'),
+                db.func.sum(Transaction.extended_sales_dollar_amount).label('total_sales'),
+                (db.func.sum(Transaction.extended_gross_profit_dollar_amount) / db.func.sum(Transaction.extended_sales_dollar_amount) * 100).label('gross_margin_percentage')
+            ).join(Transaction).join(DateModel).filter(DateModel.id == date_id).group_by(
+                Product.id
+            ).all()
+
+            # Convert results to a list of dictionaries for JSON response
+            result_dicts = [
+                {
+                    'product_id': row.product_id,
+                    'product_name': row.product_name,
+                    'product_brand': row.product_brand,
+                    'product_category': row.product_category,
+                    'product_department': row.product_department,
+                    'total_gross_profit': row.total_gross_profit,
+                    'total_sales': row.total_sales,
+                    'gross_margin_percentage': round(row.gross_margin_percentage, 2)
+                }
+                for row in results
+            ]
+
+            return jsonify(result_dicts)
+
+        if start_date_id and end_date_id:
+            results = db.session.query(
+                Product.id.label('product_id'),
+                Product.name.label('product_name'),
+                Product.brand.label('product_brand'),
+                Product.category.label('product_category'),
+                Product.department.label('product_department'),
+                db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit'),
+                db.func.sum(Transaction.extended_sales_dollar_amount).label('total_sales'),
+                (db.func.sum(Transaction.extended_gross_profit_dollar_amount) / db.func.sum(Transaction.extended_sales_dollar_amount) * 100).label('gross_margin_percentage')
+            ).join(Transaction).join(DateModel).filter(DateModel.full_date.between(
+                db.session.query(DateModel.full_date).filter(DateModel.id == start_date_id),
+                db.session.query(DateModel.full_date).filter(DateModel.id == end_date_id)
+            )).group_by(Product.id).all()
+
+            # Convert results to a list of dictionaries for JSON response
+            result_dicts = [
+                {
+                    'product_id': row.product_id,
+                    'product_name': row.product_name,
+                    'product_brand': row.product_brand,
+                    'product_category': row.product_category,
+                    'product_department': row.product_department,
+                    'total_gross_profit': row.total_gross_profit,
+                    'total_sales': row.total_sales,
+                    'gross_margin_percentage': round(row.gross_margin_percentage, 2)
+                }
+                for row in results
+            ]
+
+            return jsonify(result_dicts)
+        
+    if groupby == "store":
+        if date_id:
+            results = db.session.query(
+                Store.id.label("store_id"),
+                Store.name.label("store_name"),
+                db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit'),
+                db.func.sum(Transaction.extended_sales_dollar_amount).label('total_sales'),
+                (db.func.sum(Transaction.extended_gross_profit_dollar_amount) / db.func.sum(Transaction.extended_sales_dollar_amount) * 100).label('gross_margin_percentage')
+            ).join(Transaction).join(DateModel).filter(DateModel.id == date_id).group_by(
+                Store.id
+            ).all()
+
+            # Convert results to a list of dictionaries for JSON response
+            result_dicts = [
+                {
+                    'store_id': row.store_id,
+                    'store_name': row.store_name,
+                    'total_gross_profit': row.total_gross_profit,
+                    'total_sales': row.total_sales,
+                    'gross_margin_percentage': round(row.gross_margin_percentage, 2)
+                }
+                for row in results
+            ]
+
+            return jsonify(result_dicts)
+        
+        if start_date_id and end_date_id:
+            results = db.session.query(
+                Store.id.label("store_id"),
+                Store.name.label("store_name"),
+                db.func.sum(Transaction.extended_gross_profit_dollar_amount).label('total_gross_profit'),
+                db.func.sum(Transaction.extended_sales_dollar_amount).label('total_sales'),
+                (db.func.sum(Transaction.extended_gross_profit_dollar_amount) / db.func.sum(Transaction.extended_sales_dollar_amount) * 100).label('gross_margin_percentage')
+            ).join(Transaction).join(DateModel).filter(DateModel.full_date.between(
+                db.session.query(DateModel.full_date).filter(DateModel.id == start_date_id),
+                db.session.query(DateModel.full_date).filter(DateModel.id == end_date_id)
+            )).group_by(Store.id).all()
+
+            # Convert results to a list of dictionaries for JSON response
+            result_dicts = [
+                {
+                    'store_id': row.store_id,
+                    'store_name': row.store_name,
+                    'total_gross_profit': row.total_gross_profit,
+                    'total_sales': row.total_sales,
+                    'gross_margin_percentage': round(row.gross_margin_percentage, 2)
+                }
+                for row in results
+            ]
+
+            return jsonify(result_dicts)
+### NON-ADDITIVE
+
+
 # Retrieve all stores
 @app.route("/stores", methods=["GET"])
 def get_stores():
