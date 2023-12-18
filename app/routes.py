@@ -140,7 +140,7 @@ def serialize_product_results(results):
 ### QUANTITY OF ITEMS SOLD
 
 
-### TOTAL SALES
+### TOTAL SALES (EXTENDED_SALES_DOLLAR_AMOUNT)
 @app.route("/total_sales", methods=["GET"])
 def get_total_sales():
     """
@@ -371,8 +371,11 @@ def get_total_sales():
             ]
 
             return jsonify(result_list)
+### TOTAL SALES (EXTENDED_SALES_DOLLAR_AMOUNT)
 
-### TOTAL SALES
+
+### TOTAL PROFIT (EXTENDED_GROSS_PROFIT = EXTENDED_SALES_DOLLAR_AMOUNT - EXTENDED_COST_DOLLAR_AMOUNT)
+### TOTAL PROFIT (EXTENDED_GROSS_PROFIT = EXTENDED_SALES_DOLLAR_AMOUNT - EXTENDED_COST_DOLLAR_AMOUNT)
 
 
 # Retrieve all stores
