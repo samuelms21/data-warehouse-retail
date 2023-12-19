@@ -7,7 +7,10 @@ export const useFetchedStore = defineStore("fetchedStore", {
     stores: [],
     transactions: [],
     qty_solds: [],
-    total_sales: [],
+    gross_profits: [],
+    gross_margins: [],
+    dateInitIndex: 28,
+    apiErrorMessage: "",
   }),
   actions: {
     async callAPIs() {
@@ -31,23 +34,65 @@ export const useFetchedStore = defineStore("fetchedStore", {
         this.transactions = await transactionsResponse.json();
       } catch (error) {
         console.error(error.message);
+        this.apiErrorMessage = error.message;
       }
     },
-    async getQuantityOfItemsSold(dateId, storeId = null, productId = null) {
-      // console.log(
-      //   `WIII: ${dateId}, ${storeId}, ${productId ? productId : ""},`
-      // );
+    async getQuantityOfItemsSold(
+      groupby = "",
+      dateId = "",
+      storeId = "",
+      productId = ""
+    ) {
       try {
-        // dates
         const qtySoldsResponse = await fetch(
-          `http://127.0.0.1:5000/qty_items_sold?group_by=store&date_id=${dateId}&store_id=${
-            storeId ? storeId : ""
-          }&product_id=${productId ? productId : ""}`
+          `http://127.0.0.1:5000/qty_items_sold?group_by=${groupby}&date_id=${dateId}&store_id=${storeId}&product_id=${productId}`
         );
         this.qty_solds = await qtySoldsResponse.json();
       } catch (error) {
         console.error(error.message);
+        this.apiErrorMessage = error.message;
       }
+    },
+    async getGrossProfits(
+      groupby = "",
+      dateId = "",
+      startDateId = "",
+      endDateId = ""
+    ) {
+      try {
+        const grossProfitsResponse = await fetch(
+          `http://127.0.0.1:5000/gross_profit?group_by=${groupby}&date_id=${dateId}&start_date_id=${startDateId}&end_date_id=${endDateId}`
+        );
+        this.gross_profits = await grossProfitsResponse.json();
+      } catch (error) {
+        console.error(error.message);
+        this.apiErrorMessage = error.message;
+      }
+    },
+    async getGrossMargins(
+      groupby = "",
+      dateId = "",
+      startDateId = "",
+      endDateId = ""
+    ) {
+      try {
+        const grossMarginsResponse = await fetch(
+          `http://127.0.0.1:5000/gross_margin?group_by=${groupby}&date_id=${dateId}&start_date_id=${startDateId}&end_date_id=${endDateId}`
+        );
+        this.gross_margins = await grossMarginsResponse.json();
+      } catch (error) {
+        console.error(error.message);
+        this.apiErrorMessage = error.message;
+      }
+    },
+    async getInitData() {
+      await this.callAPIs();
+      await this.getQuantityOfItemsSold(
+        "store",
+        this.dates[this.dateInitIndex].id
+      );
+      await this.getGrossProfits("store", this.dates[this.dateInitIndex].id);
+      await this.getGrossMargins("store", this.dates[this.dateInitIndex].id);
     },
   },
 });

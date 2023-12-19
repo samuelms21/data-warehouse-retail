@@ -1,28 +1,48 @@
 <template>
-  <MyFilter v-if="useFilter" @emitChart="updateChart" />
+  <slot> </slot>
   <canvas ref="theChart"></canvas>
 </template>
 <script>
-import MySelector from "../components/MySelector.vue";
-import MyFilter from "../components/MyFilter.vue";
 import { limitWords } from "../utils/string_formatter";
+import { shallowRef } from "vue";
 
 export default {
-  props: ["type", "labels", "label", "data", "useFilter"],
+  props: ["type", "labels", "label", "data", "x_unit", "y_unit"],
   data() {
     return {
       chartInstance: null,
     };
   },
-  components: { MyFilter, MySelector },
   methods: {
+    updateChart() {
+      this.chartInstance.config.data.datasets[0].data = this.data;
+      this.chartInstance.config.data.labels = this.labels;
+      this.chartInstance.update();
+    },
     renderChart() {
       const chartOptions = {
-        // scales: {
-        //   y: {
-        //     beginAtZero: true,
-        //   },
-        // },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: this.x_unit, // X-axis title
+              color: "black", // Adjust the title color
+              font: {
+                family: "var(--v-font-family)",
+              },
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: this.y_unit, // Y-axis title
+              color: "black", // Adjust the title color
+              font: {
+                family: "var(--v-font-family)",
+              },
+            },
+          },
+        },
         animations: {
           tension: {
             duration: 1000,
@@ -34,35 +54,24 @@ export default {
         },
       };
 
-      // Destroy existing chart instance if it exists
-      console.log(`HOOOOOOOOOOOOOOOOOOOOOO: ${this.label}`);
-      if (this.chartInstance) {
-        console.log(`this.chartInstance: ${this.chartInstance}`);
-        this.chartInstance.destroy();
-        // this.chartInstance = null;
-      }
-
       // Create a new chart instance
-      this.chartInstance = new Chart(this.$refs.theChart, {
-        type: this.type,
-        data: {
-          labels: this.labels.map((e) => limitWords(e, 18)),
-          datasets: [
-            {
-              label: this.label,
-              data: this.data,
-              // data: Array(this.labels.length)
-              //   .fill()
-              //   .map(() => Math.random() * 10),
-              // borderWidth: 1,
-            },
-          ],
-        },
-        options: chartOptions,
-      });
-    },
-    updateChart() {
-      this.renderChart();
+      this.chartInstance = shallowRef(
+        new Chart(this.$refs.theChart, {
+          type: this.type,
+          data: {
+            labels: this.labels.map((e) => (e ? limitWords(e, 18) : "")),
+            datasets: [
+              {
+                label: this.label,
+                data: this.data,
+              },
+            ],
+          },
+          options: ["pie", "doughnut", "polarArea"].includes(this.type)
+            ? null
+            : this.chartOptions,
+        })
+      );
     },
   },
   mounted() {

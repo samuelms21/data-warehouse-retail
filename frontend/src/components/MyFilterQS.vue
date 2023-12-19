@@ -1,11 +1,20 @@
 <template>
   <v-card-subtitle>
     <v-row justify="start">
+      <!-- groupby -->
+      <MySelector
+        :items="[{ name: 'store' }, { name: 'product' }]"
+        :isDate="false"
+        :useEmpty="false"
+        :initIndex="0"
+        @selectedItem="selectGroup"
+      />
       <!-- dates -->
       <MySelector
         :items="myStore.dates"
         :isDate="true"
         :useEmpty="false"
+        :initIndex="myStore.dateInitIndex"
         @selectedItem="selectDate"
       />
       <!-- stores -->
@@ -39,6 +48,7 @@ export default {
   props: ["items", "null_statement", "isDate"],
   data() {
     return {
+      selectedGroup: null,
       selectedDate: null,
       selectedStore: null,
       selectedProduct: null,
@@ -53,15 +63,21 @@ export default {
     },
   },
   methods: {
-    callRequest() {
-      if (this.selectedDate.id) {
-        this.myStore.getQuantityOfItemsSold(
+    async callRequest() {
+      if (this.selectedDate) {
+        await this.myStore.getQuantityOfItemsSold(
+          this.selectedGroup.name,
           this.selectedDate.id,
-          this.selectedStore ? this.selectedStore.id : null,
-          this.selectedProduct ? this.selectedProduct.id : null
+          this.selectedStore ? this.selectedStore.id : "",
+          this.selectedProduct ? this.selectedProduct.id : ""
         );
         this.$emit("emitChart");
+        console.log(this.myStore.qty_solds);
       }
+    },
+    selectGroup(group) {
+      this.selectedGroup = group;
+      this.callRequest();
     },
     selectDate(date) {
       this.selectedDate = date;
@@ -80,9 +96,8 @@ export default {
     },
   },
   mounted() {
-    this.selectedDate = this.myStore.dates[0];
-    // this.callRequest();
-    console.log(this.myStore.qty_solds);
+    this.selectedDate = this.myStore.dates[this.myStore.dateInitIndex];
+    this.selectedGroup = { name: "store" };
   },
 };
 </script>

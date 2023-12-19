@@ -32,7 +32,7 @@
 import { formatDate, limitWords } from "../utils/string_formatter";
 
 export default {
-  props: ["items", "isDate", "useEmpty"],
+  props: ["items", "isDate", "useEmpty", "initIndex"],
   data() {
     return {
       selectedItem: null,
@@ -61,7 +61,10 @@ export default {
   },
   mounted() {
     if (!this.useEmpty) {
-      this.selectedItem = this.items[0];
+      this.selectedItem = this.items[this.initIndex];
+    }
+    if (this.initIndex) {
+      this.selectedItem = this.items[this.initIndex];
     }
   },
 };
