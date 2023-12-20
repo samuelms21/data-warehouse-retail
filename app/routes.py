@@ -770,6 +770,25 @@ def get_factless_fact_promotions():
 ### FACTLESS FACT (PROMOTIONS)
 
 
+# Retrieve all promotions
+@app.route("/promotions", methods=["GET"])
+def get_promotions():
+    query = sa.select(Promotion)
+    all_promotions = db.session.scalars(query).all()
+    serialized_promotions = []
+
+    for promotion in all_promotions:
+        item = {
+            "id": promotion.id,
+            "name": promotion.name,
+            "start_date": promotion.start_date,
+            "end_date": promotion.end_date
+        }
+        serialized_promotions.append(item)
+
+    return jsonify(serialized_promotions)
+
+
 # Retrieve all stores
 @app.route("/stores", methods=["GET"])
 def get_stores():
