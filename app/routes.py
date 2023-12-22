@@ -606,6 +606,28 @@ def get_gross_profit():
 ### NON-ADDITIVE
 @app.route("/gross_margin", methods=["GET"])
 def get_gross_margin():
+    """
+    SQL Query:
+    SELECT
+        Product.id AS product_id,
+        Product.name AS product_name,
+        Product.brand AS product_brand,
+        Product.category AS product_category,
+        Product.department AS product_department,
+        SUM(Transaction.extended_gross_profit_dollar_amount) AS total_gross_profit,
+        SUM(Transaction.extended_sales_dollar_amount) AS total_sales,
+        (SUM(Transaction.extended_gross_profit_dollar_amount) / SUM(Transaction.extended_sales_dollar_amount) * 100) AS gross_margin_percentage
+    FROM
+        Product
+    JOIN
+        Transaction ON Product.id = Transaction.product_id
+    JOIN
+        DateModel ON Transaction.date_model_id = DateModel.id
+    WHERE
+        DateModel.id = :date_id
+    GROUP BY
+        Product.id;
+    """
     groupby = request.args.get("group_by")
     date_id = request.args.get("date_id")
     start_date_id = request.args.get("start_date_id")

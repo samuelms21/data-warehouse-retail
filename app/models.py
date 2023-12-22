@@ -22,7 +22,6 @@ class Store(db.Model):
         return '<Store {}>'.format(self.name)
 
 
-# Name converted to "DateModel" instead of just "Date" to avoid using python's datetime "date" keyword
 class DateModel(db.Model):
     __tablename__ = "dates"
 
