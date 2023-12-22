@@ -2,19 +2,19 @@
   <v-container>
     <v-row>
       <!-- F1 -->
-      <MyCard cols="4" title="Fact 1" subtitle="Quantity (Grain)">
+      <!-- <MyCard cols="4" title="Fact 1" subtitle="Quantity (Grain)">
         <MyChart
           type="bar"
           :labels="myStore.products.map((e) => e.name)"
           label="# of Quantities"
           :data="f1Data"
         />
-      </MyCard>
+      </MyCard> -->
 
       <!-- F2 -->
       <MyCard
-        cols="4"
-        title="Fact 2"
+        cols="5"
+        title="Fact 2 - Total Sales"
         subtitle="Fact 1 per Dimension 1, 2 (Total Sales)"
       >
         <MyChart
@@ -33,19 +33,10 @@
         </MyChart>
       </MyCard>
 
-      <!-- F4 -->
-      <MyCard
-        cols="4"
-        title="Fact 4"
-        subtitle="Derived Fact per Dimension 1, 2"
-      >
-        <div class="text-center">under development...</div>
-      </MyCard>
-
       <!-- F7 -->
       <MyCard
         cols="4"
-        title="Fact 7"
+        title="Fact 4, 7 - Gross Profit"
         subtitle="Additive Fact per Dimension 1, 2, 3 (Gross Profit)"
       >
         <MyChart
@@ -89,7 +80,7 @@
       </MyCard>
 
       <!-- F10 -->
-      <MyCard
+      <!-- <MyCard
         cols="4"
         title="Fact 10"
         subtitle="Factless Fact per Dimension 1, 2 (Non-Promotion)"
@@ -109,7 +100,7 @@
         >
           <MyFilterES @emitChart="updateChart('f10')" api="gm" />
         </MyChart>
-      </MyCard>
+      </MyCard> -->
 
       <!-- F11 -->
       <MyCard cols="4" title="Fact 11" subtitle="Date Dimension Table">
@@ -134,9 +125,32 @@
           </tbody>
         </v-table>
       </MyCard>
+
+      <!-- F14 -->
+      <!-- <MyCard cols="4" title="Fact 14" subtitle="Matrix Bus Table">
+        <v-table fixed-header height="300px">
+          <thead>
+            <tr>
+              <th class="text-left"></th>
+              <th class="text-left">Dates</th>
+              <th class="text-left">Products</th>
+              <th class="text-left">Promotions</th>
+              <th class="text-left">Stores</th>
+              <th class="text-left">Transactions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in mbt.tables" :key="index">
+              <td>{{ item }}</td>
+              <td>{{ item.day_name }}</td>
+              <td>{{ item.event_name ? item.event_name : "No Event" }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </MyCard> -->
     </v-row>
   </v-container>
-  <v-btn @click="test">open console</v-btn>
+  <!-- <v-btn @click="test">open console</v-btn> -->
 </template>
 <script>
 import { useFetchedStore } from "../stores/fetched";
@@ -157,6 +171,47 @@ export default {
         .fill()
         .map(() => Math.random() * 10),
       borderWidth: 1,
+      mbt: {
+        tables: [
+          "id",
+          "full_date",
+          "day_name",
+          "day_of_week",
+          "day_of_month",
+          "day_of_year",
+          "month_name",
+          "month_of_year",
+          "year_of_date",
+          "an_event",
+          "event_name",
+          "name",
+          "brand",
+          "category",
+          "department",
+          "start_date",
+          "end_date",
+          "address",
+          "phone",
+          "store_id",
+          "date_id",
+          "product_id",
+          "created_at",
+          "sales_qty",
+          "unit_cost",
+          "regular_unit_price",
+          "discount_unit_price",
+          "net_unit_price",
+          "extended_discount_dollar_amount",
+          "extended_sales_dollar_amount",
+          "extended_cost_dollar_amount",
+          "extended_gross_profit_dollar_amount",
+          "promotion_id",
+        ],
+        columns: [
+          ["x", "x", "x", "x", "x"],
+          ["x", "x", "x", "x", "x"],
+        ],
+      },
     };
   },
   methods: {
