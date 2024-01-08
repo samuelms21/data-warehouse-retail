@@ -18,7 +18,7 @@
                 chips
                 label="Product"
                 v-model="selectedBuyProducts"
-                :items="products"
+                :items="productsA"
                 :item-props="itemProps"
                 multiple
                 variant="outlined"
@@ -97,7 +97,7 @@
                 chips
                 label="Product"
                 v-model="selectedAddProducts"
-                :items="products"
+                :items="productsB"
                 :item-props="itemProps"
                 multiple
                 variant="outlined"
@@ -158,6 +158,23 @@
       </v-col>
     </v-row>
   </v-container>
+  <div v-for="(p, index) in products" :key="index">
+    {{ p.name }}
+    {{ p.qty }}
+    {{ p.price }}
+  </div>
+  <p></p>
+  <div v-for="(p, index) in selectedBuyProducts" :key="index">
+    {{ p.name }}
+    {{ p.qty }}
+    {{ p.price }}
+  </div>
+  <p></p>
+  <div v-for="(p, index) in selectedAddProducts" :key="index">
+    {{ p.name }}
+    {{ p.qty }}
+    {{ p.price }}
+  </div>
 </template>
 
 <script>
@@ -166,7 +183,12 @@ export default {
     return {
       selectedBuyProducts: [],
       selectedAddProducts: [],
-      products: [
+      productsA: [
+        { name: "pA", qty: 1, price: 20000 },
+        { name: "amnsngdagsjfhaskdhkjaskd", qty: 1, price: 1000 },
+        { name: "pC", qty: 1, price: 30000 },
+      ],
+      productsB: [
         { name: "pA", qty: 1, price: 20000 },
         { name: "amnsngdagsjfhaskdhkjaskd", qty: 1, price: 1000 },
         { name: "pC", qty: 1, price: 30000 },
